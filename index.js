@@ -24,7 +24,7 @@ function afterConnection() {
     let query = connection.query("SELECT * FROM departments", function (err, res) {
         if (err) throw err;
         console.table(res);
-        connection.end();
+        // connection.end();
     });
 };
 // ----------------------------
@@ -38,6 +38,7 @@ const options =
             "Add Department",
             "Add Roles",
             "Add Employee",
+            "Remove Employee",
             "View Departments",
             "View Roles",
             "View Employees",
@@ -58,6 +59,9 @@ function init() {
                 break;
             case 'Add Employee':
                 addEmployee();
+                break;
+            case 'Remove Employee':
+                removeEmployee();
                 break;
             case 'View Departments':
                 viewDepartments();
@@ -90,11 +94,11 @@ const addDepartment = () => {
                 name: answer.department
             }, function (err, res) {
                 if (err) throw err;
-                connection.end()
-                res.console.log("department added!\n");
+                console.log("department added!\n");
+                console.log("What else would you like to do?\n");
+                init();
             }
         )
-        console.log(query.sql)
     })
 }
 
@@ -137,11 +141,11 @@ const addRoles = () => {
                 department_id: answer.dept
             }, function (err, res) {
                 if (err) throw err;
-                connection.end()
-                res.console.log("Role added!\n");
+                console.log("Role added!\n");
+                console.log("What else would you like to do?\n");
+                init();
             }
         )
-        console.log(query.sql)
     })
 }
 
@@ -158,24 +162,45 @@ const addEmployee = () => {
             name: 'empLastName'
         },
         {
-            type: 'input',
+            type: 'list',
             message: 'What is the employees role?',
+            choices: [
+                "Technician", "Salesman", "Parts Clerk"
+            ],
             name: 'empRole'
         }
     ]).then(answer => {
         console.log(`Adding ${answer.department} department...\n`);
+
+        switch (answer.empRole) {
+            case 'Sales':
+                answer.dept = 2;
+                break;
+            case 'Service':
+                answer.dept = 1;
+                break;
+            case 'Parts':
+                answer.dept = 3;
+                break;
+        }
+
         let query = connection.query(
-            "INSERT INTO departments SET ?",
+            "INSERT INTO employees SET ?",
             {
-                name: answer.department
+                first_name: answer.empFirstName,
+                last_name: answer.empLastName
             }, function (err, res) {
                 if (err) throw err;
-                connection.end()
-                res.console.log("department added!\n");
+                console.log("department added!\n");
+                console.log("What else would you like to do?\n");
+                init();
             }
         )
-        console.log(query.sql)
     })
+}
+
+const removeEmployee = () => {
+
 }
 
 const viewDepartments = () => {
