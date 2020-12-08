@@ -21,7 +21,7 @@ connection.connect(function (err) {
 });
 
 function afterConnection() {
-    connection.query("SELECT * FROM employees, roles, departments", function (err, res) {
+    let query = connection.query("SELECT * FROM departments", function (err, res) {
         if (err) throw err;
         console.table(res);
         connection.end();
@@ -82,21 +82,20 @@ const addDepartment = () => {
             message: 'What is the name of the department you would like to add?',
             name: 'department'
         }
-    ])
-        .then(answer => {
-            console.log(`Adding ${answer.department} department...\n`);
-            connection.query(
-                "INSERT INTO departments SET ?",
-                {
-                    name: answer.department
-                }, function (err, res) {
-                    if (err) throw err;
-                    connection.end()
-                    res.console.log("department added!\n");
-                }
-            )
-            console.log(query.sql)
-        })
+    ]).then(answer => {
+        console.log(`Adding ${answer.department} department...\n`);
+        connection.query(
+            "INSERT INTO departments SET ?",
+            {
+                name: answer.department
+            }, function (err, res) {
+                if (err) throw err;
+                connection.end()
+                res.console.log("department added!\n");
+            }
+        )
+        console.log(query.sql)
+    })
 }
 
 const addRoles = () => {
@@ -117,62 +116,66 @@ const addRoles = () => {
             name: 'dept',
             choices: ["Sales", "Service", "Parts"]
         }
-    ])
-        .then(answer => {
-
-            switch (answer.dept) {
-                case 'Sales':
-                    answer.dept = 1;
-                    break;
-                case 'Service':
-                    answer.dept = 2;
-                    break;
-                case 'Parts':
-                    answer.dept = 3;
-                    break;
+    ]).then(answer => {
+        switch (answer.dept) {
+            case 'Sales':
+                answer.dept = 1;
+                break;
+            case 'Service':
+                answer.dept = 2;
+                break;
+            case 'Parts':
+                answer.dept = 3;
+                break;
+        }
+        console.log(`Adding ${answer.role} role...\n`);
+        connection.query(
+            "INSERT INTO roles SET ?",
+            {
+                title: answer.role,
+                salary: answer.salary,
+                department_id: answer.dept
+            }, function (err, res) {
+                if (err) throw err;
+                connection.end()
+                res.console.log("Role added!\n");
             }
-
-            console.log(`Adding ${answer.role} role...\n`);
-
-            connection.query(
-                "INSERT INTO roles SET ?",
-                {
-                    title: answer.role,
-                    salary: answer.salary,
-                    department_id: answer.dept
-                }, function (err, res) {
-                    if (err) throw err;
-                    connection.end()
-                    res.console.log("Role added!\n");
-                }
-            )
-            console.log(query.sql)
-        })
+        )
+        console.log(query.sql)
+    })
 }
 
 const addEmployee = () => {
-    inquirer
-        .prompt([
+    inquirer.prompt([
+        {
+            type: 'input',
+            message: 'What is the employees first name?',
+            name: 'empFirstName'
+        },
+        {
+            type: 'input',
+            message: 'What is the employees last name?',
+            name: 'empLastName'
+        },
+        {
+            type: 'input',
+            message: 'What is the employees role?',
+            name: 'empRole'
+        }
+    ]).then(answer => {
+        console.log(`Adding ${answer.department} department...\n`);
+        let query = connection.query(
+            "INSERT INTO departments SET ?",
             {
-                type: 'input',
-                message: 'What is the employees first name?',
-                name: 'empFirstName'
+                name: answer.department
+            }, function (err, res) {
+                if (err) throw err;
+                connection.end()
+                res.console.log("department added!\n");
             }
-        ])
-        .then(answer => {
-            console.log(`Adding ${answer.department} department...\n`);
-            let query = connection.query(
-                "INSERT INTO departments SET ?",
-                {
-                    name: answer.department
-                }, function (err, res) {
-                    if (err) throw err;
-                    connection.end()
-                    res.console.log("department added!\n");
-                }
-            )
-            console.log(query.sql)
-        })
+        )
+        console.log(query.sql)
+    })
 }
 
 const viewDepartments = () => {
