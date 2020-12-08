@@ -32,15 +32,11 @@ INSERT INTO departments (name)
 VALUES ("Service"), ("Sales"), ("Parts");
 
 INSERT INTO roles (title, salary, department_id)
-VALUES 
-("Ronnie", 34.00, 1),
-("Samson", 22.00, 1),
-("JJ", 20.00, 2),
-("Justin", 22.00, 3);
+VALUES ("Technician", 26.00, 1),("Salesman", 20.00, 2),("Parts Clerk", 22.00, 3);
 
 INSERT INTO employees (first_name, last_name, role_id, manager_id)
 VALUES 
-("Ronnie", "Taylor", 34.00, 1),
-("Samson", "Vang", 22.00, 1),
-("JJ", 20.00, 2),
-("Justin", 22.00, 3);
+("Ronnie", "Taylor", 1, 0),
+("Samson", "Vang", 1, 0),
+("Michael", "Jordan", 2, 0),
+("Justin", "Iswhack", 3, 1);
