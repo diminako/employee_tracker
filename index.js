@@ -4,8 +4,6 @@ const fs = require('fs');
 const { allowedNodeEnvironmentFlags } = require('process');
 const table = require('console.table');
 
-// const employees_js = require('./employees.js')
-
 // ---------------------------------------------
 var connection = mysql.createConnection({
     host: 'localhost',
@@ -19,24 +17,6 @@ connection.connect(function (err) {
     if (err) throw err;
     init()
 });
-
-function afterConnection() {
-    let query = connection.query("SELECT * FROM departments", function (err, res) {
-        if (err) throw err;
-        // console.table(res);
-        // connection.end();
-    });
-    connection.query("SELECT * FROM roles", function (err, res) {
-        if (err) throw err;
-        // console.table(res);
-        // connection.end();
-    });
-    connection.query("SELECT * FROM employees", function (err, res) {
-        if (err) throw err;
-        // console.table(res);
-        // connection.end();
-    });
-};
 // // ----------------------------
 
 const options =
@@ -52,7 +32,8 @@ const options =
             "View Departments",
             "View Roles",
             "View Employees",
-            "Update Employee Roles"
+            "Update Employees Roles",
+            "End Application"
         ]
     }];
 
@@ -85,6 +66,9 @@ function init() {
             case 'Update Employees Roles':
                 updateEmployeeRoles();
                 break;
+            case 'End Application':
+                endApp();
+                break;
         }
     });
 }
@@ -113,7 +97,6 @@ const addDepartment = () => {
 
 const addRoles = () => {
     connection.query("SELECT * FROM departments;", (err, results) => {
-
         if (err) console.log(err);
         const departmentList = results.map(({ name, id }) => { return { name: name, value: id } })
         inquirer.prompt([
@@ -147,59 +130,58 @@ const addEmployee = () => {
     connection.query("Select * From roles;", (err, results) => {
         if (err) console.log(err);
         const roleList = results.map(role => { return { name: role.title, value: role.id } })
+
         connection.query("SELECT * FROM employees;", (err, results) => {
             const employeeList = results.map(employ => { return { name: `${employ.first_name} ${employ.last_name}`, value: employ.id } })
 
-            inquirer.prompt([
-                {
-                    type: 'input',
-                    message: 'What is the employees first name?',
-                    name: 'first_name'
-                },
-                {
-                    type: 'input',
-                    message: 'What is the employees last name?',
-                    name: 'last_name'
-                },
-                {
-                    type: 'list',
-                    message: 'What is the employees role?',
-                    choices: roleList,
-                    name: 'role_id'
-                },
-                {
-                    type: 'list',
-                    message: 'Who is your manager?',
-                    name: 'manager_id',
-                    choices: employeeList
-                }]).then(answer => {
-                    connection.query(
-                        "INSERT INTO employees SET ?", answer, function (err, res) {
-                            if (err) throw err;
-                            console.log("department added!\n");
-                            console.log("What else would you like to do?\n");
-                            init();
-                        })
-                })
+            inquirer.prompt([{
+                type: 'input',
+                message: 'What is the employees first name?',
+                name: 'first_name'
+            },
+            {
+                type: 'input',
+                message: 'What is the employees last name?',
+                name: 'last_name'
+            },
+            {
+                type: 'list',
+                message: 'What is the employees role?',
+                choices: roleList,
+                name: 'role_id'
+            },
+            {
+                type: 'list',
+                message: 'Who is your manager?',
+                name: 'manager_id',
+                choices: employeeList
+            }]).then(answer => {
+                connection.query(
+                    "INSERT INTO employees SET ?", answer, function (err, res) {
+                        if (err) throw err;
+                        console.log("department added!\n");
+                        console.log("What else would you like to do?\n");
+                        init();
+                    })
+            })
         })
     })
 }
 
 const removeEmployee = () => {
-    inquirer.prompt([
-        {
-            type: 'input',
-            message: 'What is the last name of the employee you wish to remove?',
-            name: "last_name"
-        },]).then(answer => {
-            connection.query(
-                `DELETE FROM employees WHERE last_name = '${answer.last_name}';`, function (err, res) {
-                    if (err) console.log(err);
-                    console.log("Employee Booted!\n");
-                    console.log("What else would you like to do?\n");
-                    init();
-                })
-        })
+    inquirer.prompt([{
+        type: 'input',
+        message: 'What is the last name of the employee you wish to remove?',
+        name: "last_name"
+    },]).then(answer => {
+        connection.query(
+            `DELETE FROM employees WHERE last_name = '${answer.last_name}';`, function (err, res) {
+                if (err) console.log(err);
+                console.log("Employee Booted!\n");
+                console.log("What else would you like to do?\n");
+                init();
+            })
+    })
 }
 
 const viewDepartments = () => {
@@ -208,7 +190,6 @@ const viewDepartments = () => {
         console.table(results);
         init()
     })
-
 }
 
 const viewRoles = () => {
@@ -217,7 +198,6 @@ const viewRoles = () => {
         console.table(results);
         init()
     })
-
 }
 
 const viewEmployees = () => {
@@ -226,11 +206,39 @@ const viewEmployees = () => {
         console.table(results);
         init()
     })
-
 }
 
 const updateEmployeeRoles = () => {
-    console.log("yo")
-
+    connection.query("Select * From roles;", (err, results) => {
+        if (err) console.log(err);
+        const roleList = results.map(role => { return { name: role.title, value: role.id } })
+        inquirer.prompt([{
+            type: 'input',
+            message: 'Provide the employees last name.',
+            name: "last_name"
+        },
+        {
+            type: 'list',
+            message: 'What is their new Role?',
+            choices: roleList,
+            name: "role_id"
+        }]).then(answer => {
+            connection.query(`UPDATE employees SET ? WHERE ?`,
+                [
+                    {
+                        role_id: answer.role_id
+                    },
+                    {
+                        last_name: answer.last_name
+                    }
+                ], function (err, res) {
+                    if (err) console.log(err);
+                    init();
+                })
+        })
+    })
 }
 
+const endApp = () => {
+    connection.end();
+}
